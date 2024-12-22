@@ -16,9 +16,11 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
+            overflow-y: hidden;
+            overflow-x: hidden;
         }
         h1 {
-            color: #bb86fc;
+            color: #0077ff;
             margin-bottom: 20px;
             text-align: center;
         }
@@ -45,33 +47,32 @@
             background-color: #424242;
         }
         .cell.x {
-            color: #bb86fc;
+            color: #0066ff;
         }
         .cell.o {
             color: #03dac5;
         }
-         #status-message {
+        #status-message {
             margin-top: 15px;
             text-align: center;
             font-size: 1.2rem;
             min-height: 20px;
             color: #e0e0e0;
-         }
+        }
         #scores {
             margin-top: 20px;
             display: flex;
             justify-content: center;
-             color: #e0e0e0;
+            color: #e0e0e0;
             gap: 20px;
         }
         .score-card {
             text-align: center;
-             color: #e0e0e0;
+            color: #e0e0e0;
         }
-
         button {
-            background-color: #bb86fc;
-            color: #1e1e1e;
+            background-color: #0066ff;
+            color: #ffffff;
             border: none;
             padding: 10px 20px;
             margin-top: 20px;
@@ -79,34 +80,33 @@
             border-radius: 4px;
             transition: background-color 0.2s;
         }
-
-        button:hover{
-             background-color: #c99ffc;
+        button:hover {
+            background-color: #2883fa;
         }
         #join-game-container {
             display: flex;
             flex-direction: column;
             align-items: center;
+            gap: 10px;
         }
-         #game-id-input {
+        .input-field {
             padding: 10px;
-            margin: 10px 0;
-             border-radius: 4px;
-             background-color: #303030;
-              color: #e0e0e0;
-              border: 1px solid #424242;
+            margin: 5px 0;
+            border-radius: 4px;
+            background-color: #303030;
+            color: #e0e0e0;
+            border: 1px solid #424242;
+            width: 200px;
         }
-
-         #game-id-input::placeholder {
-              color: #757575;
+        .input-field::placeholder {
+            color: #757575;
         }
-
         #notification {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #4caf50; /* green for success */
+            background-color: #4caf50;
             color: white;
             padding: 10px 20px;
             border-radius: 4px;
@@ -115,11 +115,11 @@
             white-space: nowrap;
         }
         #notification.error {
-            background-color: #f44336; /* red for error */
+            background-color: #f44336;
         }
-         .loading-spinner {
+        .loading-spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #bb86fc;
+            border-top: 4px solid #0066ff;
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -127,19 +127,22 @@
             display: none;
             margin-left: 10px;
         }
-         @keyframes spin {
+        @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-
 </head>
 <body>
     <h1>Tic Tac Toe Online</h1>
     <div id="join-game-container">
-      <input type="text" id="game-id-input" placeholder="Enter Game ID (leave blank to create a new game)">
-      <button onclick="joinGame()">Join Game</button>
+        <input type="text" id="custom-game-id" class="input-field" placeholder="Enter your desired Game ID" required>
+        <select id="player-type" class="input-field">
+            <option value="X">Join as Player X</option>
+            <option value="O">Join as Player O</option>
+        </select>
+        <button onclick="joinGame()">Join/Create Game</button>
     </div>
     <div id="game-container" style="display: none">
         <div class="cell" data-index="0"></div>
@@ -153,210 +156,217 @@
         <div class="cell" data-index="8"></div>
     </div>
     <div id="status-message"></div>
-     <div id="scores" style="display: none;">
+    <div id="scores" style="display: none;">
         <div class="score-card">
             <div id="playerXScore">Player X: 0</div>
         </div>
         <div class="score-card">
-             <div id="playerOScore">Player O: 0</div>
+            <div id="playerOScore">Player O: 0</div>
         </div>
     </div>
     <button onclick="resetGame()" id="resetButton" style="display: none;">Reset Game</button>
     <div id="notification"></div>
     <div id="loading-spinner" class="loading-spinner"></div>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+
+
+    <script>
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+    </script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script>
-       // Initialize Firebase with your project's configuration
         const firebaseConfig = {
-        //   YOUR FIREBASE PROJECT CONFIGURATION HERE
-        apiKey: "AIzaSyCQGE1Z_ikaZVjajxRS9TdHq23_ic7W5q4",
-  authDomain: "fir-c0c18.firebaseapp.com",
-  databaseURL: "https://fir-c0c18-default-rtdb.firebaseio.com",
-  projectId: "fir-c0c18",
-  storageBucket: "fir-c0c18.firebasestorage.app",
-  messagingSenderId: "11840063593",
-  appId: "1:11840063593:web:73ac480ff6c200b7dfbaf8"
+            apiKey: "AIzaSyCQGE1Z_ikaZVjajxRS9TdHq23_ic7W5q4",
+            authDomain: "fir-c0c18.firebaseapp.com",
+            databaseURL: "https://fir-c0c18-default-rtdb.firebaseio.com",
+            projectId: "fir-c0c18",
+            storageBucket: "fir-c0c18.firebasestorage.app",
+            messagingSenderId: "11840063593",
+            appId: "1:11840063593:web:73ac480ff6c200b7dfbaf8"
         };
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-
         let gameId = null;
         let currentPlayer = 'X';
+        let playerType = null;
         let board = ['', '', '', '', '', '', '', '', ''];
         let playerXScore = 0;
         let playerOScore = 0;
         let gameStarted = false;
 
-
-        // Function to update the displayed scores
-         function updateScores() {
+        function updateScores() {
             document.getElementById('playerXScore').textContent = `Player X: ${playerXScore}`;
             document.getElementById('playerOScore').textContent = `Player O: ${playerOScore}`;
         }
-         function showNotification(message, type = 'success') {
+
+        function showNotification(message, type = 'success') {
             const notificationDiv = document.getElementById('notification');
             notificationDiv.textContent = message;
-            notificationDiv.classList.add(type);
+            notificationDiv.className = type;
             notificationDiv.style.display = 'block';
             setTimeout(() => {
                 notificationDiv.style.display = 'none';
-                 notificationDiv.classList.remove(type);
             }, 3000);
         }
 
-
-        function showLoadingSpinner(show){
-            const loadingSpinner =  document.getElementById("loading-spinner");
-            loadingSpinner.style.display = show ? "inline-block" : "none";
+        function showLoadingSpinner(show) {
+            document.getElementById("loading-spinner").style.display = show ? "inline-block" : "none";
         }
 
-        function startGame(){
-             gameStarted = true;
-             document.getElementById("join-game-container").style.display = "none";
-             document.getElementById("game-container").style.display = "grid";
-             document.getElementById("scores").style.display = "flex";
+        function startGame() {
+            gameStarted = true;
+            document.getElementById("join-game-container").style.display = "none";
+            document.getElementById("game-container").style.display = "grid";
+            document.getElementById("scores").style.display = "flex";
             document.getElementById("resetButton").style.display = "inline-block";
-             updateStatusMessage();
+            updateStatusMessage();
             updateScores();
-             showLoadingSpinner(false);
+            showLoadingSpinner(false);
         }
 
         function updateStatusMessage() {
             const messageDiv = document.getElementById('status-message');
             if (!gameStarted) {
-              messageDiv.textContent = "Waiting for another player...";
-              return;
+                messageDiv.textContent = "Waiting for another player...";
+                return;
             }
             let winner = checkWinner();
-            if(winner) {
-                 messageDiv.textContent = `Player ${winner} Wins!`;
-            } else if(board.every(cell => cell !== '')){
+            if (winner) {
+                messageDiv.textContent = `Player ${winner} Wins!`;
+            } else if (board.every(cell => cell !== '')) {
                 messageDiv.textContent = "It's a Draw!";
             } else {
                 messageDiv.textContent = `Player ${currentPlayer}'s turn`;
             }
         }
 
-        function createGame() {
-            showLoadingSpinner(true);
-            const newGameRef = database.ref('games').push();
-            gameId = newGameRef.key;
-            const initialGameData = {
-                board: board,
-                currentPlayer: currentPlayer,
-                 playerXScore: 0,
-                  playerOScore: 0,
-                  playerXJoined: true,
-                  playerOJoined: false
-            };
+        function joinGame() {
+            const customGameId = document.getElementById('custom-game-id').value.trim();
+            playerType = document.getElementById('player-type').value;
 
-             newGameRef.set(initialGameData).then(() =>{
-                 setupGameListener();
-                 startGame();
-                showNotification(`Game created! Game ID: ${gameId}`, 'success');
-            }).catch(error => {
-                 showNotification(`Error creating game: ${error.message}`, 'error');
-                 showLoadingSpinner(false);
-             });
-
-        }
-
-
-        function joinGame(){
-             showLoadingSpinner(true);
-            let enteredGameId = document.getElementById('game-id-input').value.trim();
-            if(enteredGameId === ""){
-                createGame();
+            if (!customGameId) {
+                showNotification("Please enter a Game ID", 'error');
                 return;
             }
-            const gameRef = database.ref(`games/${enteredGameId}`);
-            gameRef.once('value').then(snapshot =>{
-                if(snapshot.exists()){
-                     const gameData = snapshot.val();
-                   if (gameData.playerOJoined){
-                         showNotification(`Game is already full.`, 'error');
+
+            showLoadingSpinner(true);
+            gameId = customGameId;
+            const gameRef = database.ref(`games/${gameId}`);
+
+            gameRef.once('value').then(snapshot => {
+                if (snapshot.exists()) {
+                    // Game exists, try to join
+                    const gameData = snapshot.val();
+                    if (playerType === 'X' && gameData.playerXJoined) {
+                        showNotification("Player X already joined this game", 'error');
                         showLoadingSpinner(false);
                         return;
                     }
-                     gameId = enteredGameId;
-                     gameRef.update({playerOJoined: true}).then(() => {
-                          setupGameListener();
-                          startGame();
-                         showNotification(`Joined game: ${gameId}`, 'success');
-                     }).catch(error =>{
-                        showNotification(`Error joining game: ${error.message}`, 'error');
+                    if (playerType === 'O' && gameData.playerOJoined) {
+                        showNotification("Player O already joined this game", 'error');
                         showLoadingSpinner(false);
-                     });
+                        return;
+                    }
 
-                } else{
-                    showNotification(`Game not found.`, 'error');
-                     showLoadingSpinner(false);
+                    const updates = {};
+                    if (playerType === 'X') {
+                        updates.playerXJoined = true;
+                    } else {
+                        updates.playerOJoined = true;
+                    }
+
+                    gameRef.update(updates).then(() => {
+                        setupGameListener();
+                        startGame();
+                        showNotification(`Joined game as Player ${playerType}`, 'success');
+                    });
+                } else {
+                    // Game doesn't exist, create it
+                    const initialGameData = {
+                        board: board,
+                        currentPlayer: 'X',
+                        playerXScore: 0,
+                        playerOScore: 0,
+                        playerXJoined: playerType === 'X',
+                        playerOJoined: playerType === 'O'
+                    };
+
+                    gameRef.set(initialGameData).then(() => {
+                        setupGameListener();
+                        startGame();
+                        showNotification(`Created and joined game as Player ${playerType}`, 'success');
+                    });
                 }
+            }).catch(error => {
+                showNotification(`Error: ${error.message}`, 'error');
+                showLoadingSpinner(false);
             });
-
         }
 
-         function setupGameListener(){
+        function setupGameListener() {
             const gameRef = database.ref(`games/${gameId}`);
-           gameRef.on('value', (snapshot) =>{
+            gameRef.on('value', (snapshot) => {
                 if (snapshot.exists()) {
                     const gameData = snapshot.val();
-                     board = gameData.board;
-                     currentPlayer = gameData.currentPlayer;
-                     playerXScore = gameData.playerXScore;
+                    board = gameData.board;
+                    currentPlayer = gameData.currentPlayer;
+                    playerXScore = gameData.playerXScore;
                     playerOScore = gameData.playerOScore;
-                     updateBoardUI();
-                      updateScores();
-                      updateStatusMessage();
+                    updateBoardUI();
+                    updateScores();
+                    updateStatusMessage();
                 } else {
-                    showNotification("Game was deleted by other player", "error");
+                    showNotification("Game was deleted", "error");
                     resetBoard();
-                     gameStarted = false;
-                     document.getElementById("game-container").style.display = "none";
-                     document.getElementById("scores").style.display = "none";
-                       document.getElementById("resetButton").style.display = "none";
+                    gameStarted = false;
+                    document.getElementById("game-container").style.display = "none";
+                    document.getElementById("scores").style.display = "none";
+                    document.getElementById("resetButton").style.display = "none";
                     document.getElementById("join-game-container").style.display = "flex";
                 }
             });
         }
 
-
         function handleCellClick(index) {
-             if (!gameStarted){
+            if (!gameStarted) {
                 showNotification("Please join or create game to play", "error");
-                 return;
+                return;
+            }
+            if (currentPlayer !== playerType) {
+                showNotification("Not your turn!", "error");
+                return;
             }
             if (board[index] !== '' || checkWinner()) return;
 
             board[index] = currentPlayer;
-             database.ref(`games/${gameId}`).update({
-                 board: board,
-                 currentPlayer: currentPlayer === 'X' ? 'O' : 'X'
+            database.ref(`games/${gameId}`).update({
+                board: board,
+                currentPlayer: currentPlayer === 'X' ? 'O' : 'X'
             });
 
             let winner = checkWinner();
-            if(winner){
-                 updateScore(winner);
+            if (winner) {
+                updateScore(winner);
             }
         }
 
-
-        function updateScore(winner){
-            if (winner === 'X'){
-               playerXScore++;
-            } else if(winner === 'O'){
-               playerOScore++;
+        function updateScore(winner) {
+            if (winner === 'X') {
+                playerXScore++;
+            } else if (winner === 'O') {
+                playerOScore++;
             }
 
-             database.ref(`games/${gameId}`).update({
-                   playerXScore: playerXScore,
-                    playerOScore: playerOScore
-              });
+            database.ref(`games/${gameId}`).update({
+                playerXScore: playerXScore,
+                playerOScore: playerOScore
+            });
         }
-
 
         function checkWinner() {
             const winningCombos = [
@@ -364,16 +374,16 @@
                 [0, 3, 6], [1, 4, 7], [2, 5, 8],
                 [0, 4, 8], [2, 4, 6]
             ];
-             for(let combo of winningCombos){
+            for (let combo of winningCombos) {
                 const [a, b, c] = combo;
-                if(board[a] && board[a] === board[b] && board[a] === board[c]){
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
                     return board[a];
                 }
             }
             return null;
         }
 
-         function resetGame() {
+        function resetGame() {
             if (!gameStarted) {
                 showNotification("Cannot reset before game started", "error");
                 return;
@@ -381,20 +391,18 @@
             resetBoard();
             database.ref(`games/${gameId}`).update({
                 board: board,
-                 currentPlayer: "X"
+                currentPlayer: "X"
             });
         }
 
-          function resetBoard() {
-           board = ['', '', '', '', '', '', '', '', ''];
-           currentPlayer = 'X';
-             updateBoardUI();
-          }
-
-
+        function resetBoard() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            updateBoardUI();
+        }
 
         function updateBoardUI() {
-             const cells = document.querySelectorAll('.cell');
+            const cells = document.querySelectorAll('.cell');
             cells.forEach((cell, index) => {
                 cell.textContent = board[index];
                 cell.classList.remove('x', 'o');
@@ -404,9 +412,9 @@
         }
 
         document.querySelectorAll('.cell').forEach(cell => {
-           cell.addEventListener('click', () => {
+            cell.addEventListener('click', () => {
                 handleCellClick(parseInt(cell.getAttribute('data-index')));
-             });
+            });
         });
     </script>
 </body>
